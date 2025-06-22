@@ -22,7 +22,6 @@ const Navigation = () => {
     <header className="sticky top-0 z-50 bg-white shadow-sm border-b">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
-          {/* Logo with Name - centered on mobile, left on desktop */}
           <Link to="/" className="flex items-center space-x-3 flex-1 justify-center md:justify-start md:flex-none">
             <img 
               src="/lovable-uploads/f8ce03ed-3477-4aff-985d-d166b46d732e.png" 
