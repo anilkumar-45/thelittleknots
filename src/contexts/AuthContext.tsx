@@ -1,17 +1,19 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import bcrypt from 'bcryptjs';
 
 interface AuthContextType {
   isAdmin: boolean;
   loading: boolean;
-  loginWithPassword: (password: string) => Promise<{ error: any }>;
+  loginWithPassword: (email: string, password: string) => Promise<{ error: any }>;
   logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 // Hardcoded admin password for simplicity
-const ADMIN_PASSWORD = 'admin123';
+// const ADMIN_PASSWORD = 'admin123';
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isAdmin, setIsAdmin] = useState(false);
@@ -33,16 +35,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setLoading(false);
   }, []);
 
-  const loginWithPassword = async (password: string) => {
+  const loginWithPassword = async (email: string, password: string) => {
     try {
-      if (password === ADMIN_PASSWORD) {
+      const {data, error} = await supabase
+      .from('admin_users')
+      .select('*')
+      .eq('email', email)
+      .single();
+
+      if(error || !data || !data.password_hash) {
+        return {error: {message: 'Invalid admin credentials'}};
+      }
+
+      const passwordMatch = await bcrypt.compare(password, data.password_hash);
+      if(passwordMatch) {
         setIsAdmin(true);
-        localStorage.setItem('admin_logged_in', 'true');
-        console.log('Admin login successful');
-        return { error: null };
-      } else {
-        console.log('Invalid password attempt');
-        return { error: { message: 'Invalid password' } };
+        localStorage.setItem('admin_logged_in','true');
+        return {error: null};
+      }else {
+        return {error: {message: 'Invalid admin password'}}
       }
     } catch (error) {
       console.error('Login error:', error);

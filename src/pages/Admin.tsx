@@ -1,26 +1,53 @@
-
-import { useState, useEffect } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
-import { useContactMessages } from '@/hooks/useContactMessages';
-import { useSupabaseProducts } from '@/hooks/useSupabaseProducts';
-import { Navigate } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Eye, EyeOff, Plus, Edit, Trash2, MessageSquare, Package, AlertCircle, RefreshCw } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
-import ProductForm from '@/components/ProductForm';
+import { useState, useEffect } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { useContactMessages } from "@/hooks/useContactMessages";
+import { useSupabaseProducts } from "@/hooks/useSupabaseProducts";
+import { Navigate } from "react-router-dom";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Eye,
+  EyeOff,
+  Plus,
+  Edit,
+  Trash2,
+  MessageSquare,
+  Package,
+  AlertCircle,
+  RefreshCw,
+} from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import ProductForm from "@/components/ProductForm";
 
 const Admin = () => {
   const { isAdmin, loading: authLoading } = useAuth();
-  const { messages, loading: messagesLoading, fetchMessages, markAsRead } = useContactMessages();
-  const { products, loading: productsLoading, deleteProduct } = useSupabaseProducts();
+  const {
+    messages,
+    loading: messagesLoading,
+    fetchMessages,
+    markAsRead,
+  } = useContactMessages();
+  const {
+    products,
+    loading: productsLoading,
+    addProduct,
+    updateProduct,
+    deleteProduct,
+  } = useSupabaseProducts();
   const [showProductForm, setShowProductForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
   const [hasFetchedMessages, setHasFetchedMessages] = useState(false);
-  const [debugInfo, setDebugInfo] = useState('');
+  const [debugInfo, setDebugInfo] = useState("");
   const { toast } = useToast();
 
   useEffect(() => {
@@ -29,16 +56,18 @@ const Admin = () => {
 
   useEffect(() => {
     if (isAdmin && !hasFetchedMessages) {
-      console.log('Admin logged in, attempting to fetch messages...');
-      setDebugInfo('Attempting to fetch messages...');
-      fetchMessages().then(() => {
-        setDebugInfo('Messages fetch completed');
-        setHasFetchedMessages(true);
-      }).catch((error) => {
-        console.error('Failed to fetch messages:', error);
-        setDebugInfo(`Messages fetch failed: ${error.message}`);
-        setHasFetchedMessages(true);
-      });
+      console.log("Admin logged in, attempting to fetch messages...");
+      setDebugInfo("Attempting to fetch messages...");
+      fetchMessages()
+        .then(() => {
+          setDebugInfo("Messages fetch completed");
+          setHasFetchedMessages(true);
+        })
+        .catch((error) => {
+          console.error("Failed to fetch messages:", error);
+          setDebugInfo(`Messages fetch failed: ${error.message}`);
+          setHasFetchedMessages(true);
+        });
     }
   }, [isAdmin, hasFetchedMessages, fetchMessages]);
 
@@ -55,7 +84,7 @@ const Admin = () => {
   }
 
   const handleDeleteProduct = async (id: string) => {
-    if (window.confirm('Are you sure you want to delete this product?')) {
+    if (window.confirm("Are you sure you want to delete this product?")) {
       try {
         await deleteProduct(id);
         toast({
@@ -63,7 +92,7 @@ const Admin = () => {
           description: "Product deleted successfully",
         });
       } catch (error) {
-        console.error('Delete product error:', error);
+        console.error("Delete product error:", error);
         toast({
           title: "Error",
           description: "Failed to delete product. Please try again.",
@@ -77,7 +106,7 @@ const Admin = () => {
     try {
       await markAsRead(messageId);
     } catch (error) {
-      console.error('Mark as read error:', error);
+      console.error("Mark as read error:", error);
       toast({
         title: "Error",
         description: "Failed to mark message as read",
@@ -87,24 +116,26 @@ const Admin = () => {
   };
 
   const handleRefreshMessages = () => {
-    console.log('Refreshing messages...');
-    setDebugInfo('Refreshing messages...');
-    fetchMessages().then(() => {
-      setDebugInfo('Messages refresh completed');
-    }).catch((error) => {
-      console.error('Failed to refresh messages:', error);
-      setDebugInfo(`Messages refresh failed: ${error.message}`);
-    });
+    console.log("Refreshing messages...");
+    setDebugInfo("Refreshing messages...");
+    fetchMessages()
+      .then(() => {
+        setDebugInfo("Messages refresh completed");
+      })
+      .catch((error) => {
+        console.error("Failed to refresh messages:", error);
+        setDebugInfo(`Messages refresh failed: ${error.message}`);
+      });
   };
 
   const formatDate = (dateString: string) => {
     try {
-      return new Date(dateString).toLocaleDateString('en-IN', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
+      return new Date(dateString).toLocaleDateString("en-IN", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
       });
     } catch (error) {
       return dateString;
@@ -122,9 +153,7 @@ const Admin = () => {
             Manage your products and customer messages
           </p>
           {debugInfo && (
-            <p className="text-sm text-gray-500 mt-2">
-              Debug: {debugInfo}
-            </p>
+            <p className="text-sm text-gray-500 mt-2">Debug: {debugInfo}</p>
           )}
         </div>
 
@@ -148,14 +177,18 @@ const Admin = () => {
                     <MessageSquare className="h-5 w-5" />
                     Contact Messages ({messages.length})
                   </CardTitle>
-                  <Button 
+                  <Button
                     onClick={handleRefreshMessages}
                     variant="outline"
                     size="sm"
                     disabled={messagesLoading}
                   >
-                    <RefreshCw className={`h-4 w-4 mr-2 ${messagesLoading ? 'animate-spin' : ''}`} />
-                    {messagesLoading ? 'Loading...' : 'Refresh'}
+                    <RefreshCw
+                      className={`h-4 w-4 mr-2 ${
+                        messagesLoading ? "animate-spin" : ""
+                      }`}
+                    />
+                    {messagesLoading ? "Loading..." : "Refresh"}
                   </Button>
                 </div>
               </CardHeader>
@@ -191,12 +224,19 @@ const Admin = () => {
                       <TableBody>
                         {messages.map((message) => (
                           <TableRow key={message.id}>
-                            <TableCell className="font-medium">{message.name}</TableCell>
+                            <TableCell className="font-medium">
+                              {message.name}
+                            </TableCell>
                             <TableCell>{message.email}</TableCell>
-                            <TableCell className="max-w-xs truncate" title={message.message}>
+                            <TableCell
+                              className="max-w-xs truncate"
+                              title={message.message}
+                            >
                               {message.message}
                             </TableCell>
-                            <TableCell>{formatDate(message.created_at)}</TableCell>
+                            <TableCell>
+                              {formatDate(message.created_at)}
+                            </TableCell>
                             <TableCell>
                               {message.read ? (
                                 <Badge variant="secondary">
@@ -235,7 +275,12 @@ const Admin = () => {
             <div className="space-y-6">
               <div className="flex justify-between items-center">
                 <h2 className="text-2xl font-bold">Products Management</h2>
-                <Button onClick={() => {setShowProductForm(true); setEditingProduct(null);}}>
+                <Button
+                  onClick={() => {
+                    setShowProductForm(true);
+                    setEditingProduct(null);
+                  }}
+                >
                   <Plus className="h-4 w-4 mr-2" />
                   Add Product
                 </Button>
@@ -244,14 +289,25 @@ const Admin = () => {
               {showProductForm && (
                 <Card>
                   <CardHeader>
-                    <CardTitle>{editingProduct ? 'Edit Product' : 'Add New Product'}</CardTitle>
+                    <CardTitle>
+                      {editingProduct ? "Edit Product" : "Add New Product"}
+                    </CardTitle>
                   </CardHeader>
                   <CardContent>
                     <ProductForm
                       product={editingProduct}
-                      onSave={() => {
-                        setShowProductForm(false);
-                        setEditingProduct(null);
+                      onSave={async (formData) => {
+                        try {
+                          if (editingProduct) {
+                            await updateProduct(editingProduct.id, formData);
+                          } else {
+                            await addProduct(formData);
+                          }
+                          setShowProductForm(false);
+                          setEditingProduct(null);
+                        } catch (error) {
+                          console.error("Save error:", error);
+                        }
                       }}
                       onCancel={() => {
                         setShowProductForm(false);
@@ -298,12 +354,22 @@ const Admin = () => {
                         <TableBody>
                           {products.map((product) => (
                             <TableRow key={product.id}>
-                              <TableCell className="font-medium">{product.name}</TableCell>
-                              <TableCell className="capitalize">{product.category}</TableCell>
+                              <TableCell className="font-medium">
+                                {product.name}
+                              </TableCell>
+                              <TableCell className="capitalize">
+                                {product.category}
+                              </TableCell>
                               <TableCell>₹{product.price}</TableCell>
                               <TableCell>
-                                <Badge variant={product.in_stock ? "default" : "secondary"}>
-                                  {product.in_stock ? "In Stock" : "Out of Stock"}
+                                <Badge
+                                  variant={
+                                    product.in_stock ? "default" : "secondary"
+                                  }
+                                >
+                                  {product.in_stock
+                                    ? "In Stock"
+                                    : "Out of Stock"}
                                 </Badge>
                               </TableCell>
                               <TableCell>
@@ -321,7 +387,9 @@ const Admin = () => {
                                   <Button
                                     variant="destructive"
                                     size="sm"
-                                    onClick={() => handleDeleteProduct(product.id)}
+                                    onClick={() =>
+                                      handleDeleteProduct(product.id)
+                                    }
                                   >
                                     <Trash2 className="h-4 w-4" />
                                   </Button>

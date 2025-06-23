@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Navigate } from 'react-router-dom';
 import { Lock } from 'lucide-react';
@@ -10,6 +9,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 
 const Login = () => {
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const { isAdmin, loginWithPassword } = useAuth();
@@ -19,21 +19,18 @@ const Login = () => {
     window.scrollTo(0, 0);
   }, []);
 
-  // Redirect if already logged in
-  if (isAdmin) {
-    return <Navigate to="/admin" replace />;
-  }
+  if (isAdmin) return <Navigate to="/admin" replace />;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
-    const { error } = await loginWithPassword(password);
-    
+    const { error } = await loginWithPassword(email, password);
+
     if (error) {
       toast({
-        title: "Login Failed", 
-        description: "Invalid password. Please try again.",
+        title: "Login Failed",
+        description: error.message || "Invalid credentials",
         variant: "destructive",
       });
     } else {
@@ -42,7 +39,7 @@ const Login = () => {
         description: "Welcome back, Admin!",
       });
     }
-    
+
     setIsLoading(false);
   };
 
@@ -54,10 +51,21 @@ const Login = () => {
             <Lock className="h-6 w-6 text-primary" />
           </div>
           <CardTitle className="text-2xl font-bold">Admin Login</CardTitle>
-          <p className="text-gray-600">Enter admin password to access dashboard</p>
+          <p className="text-gray-600">Enter your admin credentials</p>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <Label htmlFor="email">Admin Email</Label>
+              <Input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="admin@example.com"
+                required
+              />
+            </div>
             <div>
               <Label htmlFor="password">Admin Password</Label>
               <Input
@@ -69,9 +77,9 @@ const Login = () => {
                 required
               />
             </div>
-            <Button 
-              type="submit" 
-              className="w-full bg-primary hover:bg-primary/90" 
+            <Button
+              type="submit"
+              className="w-full bg-primary hover:bg-primary/90"
               disabled={isLoading}
             >
               {isLoading ? 'Logging in...' : 'Login'}

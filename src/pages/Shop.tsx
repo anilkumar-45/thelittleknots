@@ -1,33 +1,49 @@
-
-import { useState } from 'react';
-import { Plus } from 'lucide-react';
-import ProductCard from '@/components/ProductCard';
-import ProductForm from '@/components/ProductForm';
-import LoadingSpinner from '@/components/LoadingSpinner';
-import { Button } from '@/components/ui/button';
-import { useSupabaseProducts } from '@/hooks/useSupabaseProducts';
-import { Product } from '@/types/Product';
-import { useAuth } from '@/contexts/AuthContext';
+import { useState } from "react";
+import { Plus } from "lucide-react";
+import ProductCard from "@/components/ProductCard";
+import ProductForm from "@/components/ProductForm";
+import LoadingSpinner from "@/components/LoadingSpinner";
+import { Button } from "@/components/ui/button";
+import { useSupabaseProducts } from "@/hooks/useSupabaseProducts";
+import { Product } from "@/types/Product";
+import { useAuth } from "@/contexts/AuthContext";
+import { useLocation } from "react-router-dom";
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 const Shop = () => {
-  const { products, loading, addProduct, updateProduct, deleteProduct } = useSupabaseProducts();
+  const { products, loading, addProduct, updateProduct, deleteProduct } =
+    useSupabaseProducts();
   const { isAdmin } = useAuth();
-  const [activeFilter, setActiveFilter] = useState('all');
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  const categoryFromURL = searchParams.get("category");
+  const [activeFilter, setActiveFilter] = useState(categoryFromURL || "all");
   const [showProductForm, setShowProductForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | undefined>();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const newCategory =
+      new URLSearchParams(location.search).get("category") || "all";
+    setActiveFilter(newCategory);
+    window.scrollTo(0, 0);
+  }, [location.search]);
 
   const categories = [
-    { id: 'all', label: 'All Items' },
-    { id: 'keytags', label: 'Keytags' },
-    { id: 'accessories', label: 'Accessories' },
-    { id: 'toys', label: 'Toys' }
+    { id: "all", label: "All Items" },
+    { id: "keytags", label: "Keytags" },
+    { id: "accessories", label: "Accessories" },
+    { id: "toys", label: "Toys" },
   ];
 
-  const filteredProducts = products.filter(product => 
-    activeFilter === 'all' || product.category === activeFilter
+  const filteredProducts = products.filter(
+    (product) => activeFilter === "all" || product.category === activeFilter
   );
 
-  const handleSaveProduct = async (productData: Omit<Product, 'id' | 'created_at' | 'updated_at'>) => {
+  const handleSaveProduct = async (
+    productData: Omit<Product, "id" | "created_at" | "updated_at">
+  ) => {
     if (editingProduct) {
       await updateProduct(editingProduct.id, productData);
     } else {
@@ -43,7 +59,7 @@ const Shop = () => {
   };
 
   const handleDeleteProduct = async (productId: string) => {
-    if (window.confirm('Are you sure you want to delete this product?')) {
+    if (window.confirm("Are you sure you want to delete this product?")) {
       await deleteProduct(productId);
     }
   };
@@ -76,7 +92,7 @@ const Shop = () => {
             <Button
               key={category.id}
               variant={activeFilter === category.id ? "default" : "outline"}
-              onClick={() => setActiveFilter(category.id)}
+              onClick={() => navigate(`/shop?category=${category.id}`)}
               className="text-xs sm:text-sm px-3 py-2 mb-2"
               size="sm"
             >
@@ -103,10 +119,9 @@ const Shop = () => {
         {filteredProducts.length === 0 ? (
           <div className="text-center py-12 px-4">
             <p className="text-gray-600 text-base sm:text-lg mb-4">
-              {activeFilter === 'all' 
-                ? 'No products available yet.' 
-                : `No products found in the ${activeFilter} category.`
-              }
+              {activeFilter === "all"
+                ? "No products available yet."
+                : `No products found in the ${activeFilter} category.`}
             </p>
             {isAdmin && (
               <Button
