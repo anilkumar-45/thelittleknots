@@ -131,7 +131,7 @@ export const useSupabaseProducts = () => {
         const imageInserts = productData.images.map((img, index) => ({
           product_id: product.id,
           image_url: img.image_url,
-          is_primary: index === 0, // First image is primary
+          is_primary: img.is_primary, 
           display_order: index
         }));
 
@@ -192,7 +192,7 @@ export const useSupabaseProducts = () => {
         const imageInserts = productData.images.map((img, index) => ({
           product_id: productId,
           image_url: img.image_url,
-          is_primary: index === 0,
+          is_primary: img.is_primary,
           display_order: index
         }));
 
